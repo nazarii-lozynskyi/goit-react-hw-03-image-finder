@@ -18,7 +18,6 @@ Button.propTypes = {
   onClick: PropTypes.func,
 
   label: PropTypes.string,
-  //   'aria-label': PropTypes.string.isRequired,
 };
 
 export default Button;
