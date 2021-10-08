@@ -6,8 +6,6 @@ import IconButton from './components/IconButton';
 
 import { ReactComponent as CloseIcon } from './icons/closeBtnIcon.svg';
 
-import styles from './App.module.css';
-
 class App extends Component {
   state = {
     showModal: false,
@@ -27,12 +25,12 @@ class App extends Component {
 
         {showModal && (
           <Modal onClose={this.toggleModal}>
-            <IconButton onClick={this.toggleModal}>
+            <IconButton onClick={this.toggleModal} aria-label="Close Button">
               <CloseIcon width="40" height="40" />
             </IconButton>
             <img
               src="https://cdn.pixabay.com/photo/2021/08/25/17/22/flowers-6574079_1280.jpg"
-              alt=""
+              alt="flower"
             />
           </Modal>
         )}
