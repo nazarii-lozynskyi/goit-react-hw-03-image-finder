@@ -17,7 +17,7 @@
     0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 }
 
-.SearchForm {
+.Form {
   display: flex;
   align-items: center;
   width: 100%;
@@ -27,7 +27,7 @@
   overflow: hidden;
 }
 
-.SearchForm-button {
+.Button {
   display: inline-block;
   width: 48px;
   height: 48px;
@@ -42,11 +42,11 @@
   outline: none;
 }
 
-.SearchForm-button:hover {
+.Button:hover {
   opacity: 1;
 }
 
-.SearchForm-button-label {
+.ButtonLabel {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -58,7 +58,7 @@
   border: 0;
 }
 
-.SearchForm-input {
+.Input {
   display: inline-block;
   width: 100%;
   font: inherit;
@@ -69,7 +69,7 @@
   padding-right: 4px;
 }
 
-.SearchForm-input::placeholder {
+.Input::placeholder {
   font: inherit;
   font-size: 18px;
 }
