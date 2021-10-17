@@ -1,70 +1,154 @@
 import { Component } from 'react';
+
+import Skeleton from 'react-loading-skeleton';
+
+import API from '../../services/apiService.js';
+
 import ImageGalleryItem from '../ImageGalleryItem';
 import Button from '../Button';
+import Loader from '../Loader';
+import ErrorMessage from '../ErrorMessage';
+import Idle from '../Idle';
+
+//import Loader from 'react-loader-spinner';
 
 import styles from './ImageGallery.module.css';
 
+const newAPI = new API();
 export default class ImageGallery extends Component {
-  state = { gallery: null, page: 1 };
+  state = {
+    gallery: null,
+    status: 'idle',
+    totalHits: null,
 
-  resetPage() {
-    this.setState({ page: 1 });
-  }
+    error: null,
+  };
 
   componentDidUpdate(prevProps, prevStats) {
-    if (prevProps.inputValue !== this.props.inputValue) {
-      const APY_KEY = '22982376-5ba816c8dbdcbd488bfab475d';
-      const URL = 'https://pixabay.com/api/';
-      const TYPE_PHOTO = 'photo&orientation=horizontal';
+    const prevName = prevProps.inputValue;
+    const nextName = this.props.inputValue;
 
-      fetch(
-        `${URL}?q=${this.props.inputValue}&page=${this.state.page}&key=${APY_KEY}&image_type=${TYPE_PHOTO}&per_page=12`
-      )
-        .then(response => response.json())
-        .then(gallery =>
-          this.setState({
-            gallery: gallery.hits,
-            page: prevStats.page + 1,
-          })
-        );
+    if (prevName !== nextName) {
+      this.setState({ status: 'pending' });
+
+      newAPI.value = nextName;
+      newAPI.resetPage();
+
+      newAPI.fetchImages().then(result => {
+        if (result.hits.length !== 0) {
+          return this.setState({
+            gallery: result.hits,
+            status: 'resolved',
+            totalHits: result.totalHits,
+          });
+        }
+        return this.setState({
+          gallery: result.hits,
+          status: 'rejected',
+          totalHits: result.totalHits,
+        });
+      });
     }
   }
 
-  // loadMore(inputValue, page) {
-  //   const APY_KEY = '22982376-5ba816c8dbdcbd488bfab475d';
-  //   const URL = 'https://pixabay.com/api/';
-  //   const TYPE_PHOTO = 'photo&orientation=horizontal';
+  loadMoreImages = () => {
+    this.setState({ status: 'pending' });
 
-  //   fetch(
-  //     `${URL}?q=${inputValue}&page=${page}&key=${APY_KEY}&image_type=${TYPE_PHOTO}&per_page=12`
-  //   )
-  //     .then(response => response.json())
-  //     .then(gallery =>
-  //       this.setState({
-  //         gallery: [gallery, ...gallery.hits],
-  //         page: 3,
-  //       })
-  //     );
-  // }
+    //setTimeout
+    newAPI
+      .fetchImages()
+      .then(result => {
+        this.setState(prevState => {
+          return {
+            gallery: [...prevState.gallery, ...result.hits],
+            status: 'resolved',
+            totalHits: result.totalHits,
+          };
+        });
+      })
+      .catch(error => this.setState({ error, status: 'rejected' }))
+      .finally(() => {
+        this.scroll();
+      });
+    console.log(this.state.totalHits);
+    console.log(this.state.gallery.length);
+  };
+
+  scroll() {
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }, 500);
+  }
 
   render() {
-    return (
-      <>
-        <ul className={styles.ImageGallery}>
-          {this.state.gallery &&
-            this.state.gallery.map(galleryItem => (
-              <ImageGalleryItem
-                src={galleryItem.webformatURL}
-                alt={galleryItem.tags}
-                key={galleryItem.id}
-              />
-            ))}
-        </ul>
+    const { status } = this.state;
+    const { inputValue } = this.props;
 
-        {this.state.gallery && (
-          <Button onClick={this.componentDidMount} label="Load more" />
-        )}
-      </>
-    );
+    if (status === 'idle') {
+      return <Idle />;
+    }
+
+    if (status === 'pending') {
+      return (
+        <>
+          <ul className={styles.ImageGallery}>
+            {this.state.gallery &&
+              this.state.gallery.map(galleryItem => (
+                <li className={styles.Item} key={galleryItem.id}>
+                  <Skeleton height={260} width={330} />
+                </li>
+              ))}
+          </ul>
+
+          <Loader
+            type="Puff"
+            color="#00BFFF"
+            height={100}
+            width={100}
+            timeout={3000}
+          />
+        </>
+      );
+    }
+
+    if (status === 'rejected') {
+      return (
+        <ErrorMessage inputValue={inputValue} message={this.state.error} />
+      );
+    }
+
+    if (status === 'resolved') {
+      return (
+        <>
+          <ul className={styles.ImageGallery}>
+            {this.state.gallery &&
+              this.state.gallery.map(galleryItem => (
+                <ImageGalleryItem
+                  src={galleryItem.webformatURL}
+                  alt={galleryItem.tags}
+                  key={galleryItem.id}
+                  onClick={this.toggleModal}
+                  largeImageURL={galleryItem.largeImageURL}
+                ></ImageGalleryItem>
+              ))}
+          </ul>
+
+          {this.state.totalHits > 12 ? (
+            <Button onClick={this.loadMoreImages} label="Load more" />
+          ) : (
+            <></>
+          )}
+
+          {/* {this.state.gallery.length > 12 ? (
+            <Button onClick={this.loadMoreImages} label="Load more" />
+          ) : (
+            <></>
+          )} */}
+        </>
+      );
+    }
   }
 }
