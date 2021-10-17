@@ -1,4 +1,8 @@
 .IconButton {
+  position: relative;
+  left: 95%;
+  top: 20px;
+
   cursor: pointer;
 
   display: inline-flex;
